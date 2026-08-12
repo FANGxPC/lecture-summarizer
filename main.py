@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Request, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -13,9 +13,7 @@ app = FastAPI(title="Audio Summarizer")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
 templates = Jinja2Templates(directory="templates")
 @app.on_event("startup")
 def startup_event():
@@ -31,20 +29,18 @@ async def read_history(request: Request):
     return templates.TemplateResponse("history.html", {"request": request, "tasks": tasks})
 
 @app.post("/api/upload")
-async def upload_audio(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
-    if not file.filename.endswith((".mp3", ".wav", ".m4a")):
+async def upload_audio(file: UploadFile = File(...)):
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in {".mp3", ".wav", ".m4a"}:
         raise HTTPException(status_code=400, detail="Invalid file type. Only .mp3, .wav, and .m4a are supported.")
-        raise HTTPException(status_code=400, detail="Invalid file type. Only .mp3, .wav, and .m4a are supported.")
-    file_path = os.path.join(UPLOAD_DIR, f"{time.time()}_{file.filename}")
+    safe_name = os.path.basename(file.filename)
+    file_path = os.path.join(UPLOAD_DIR, f"{time.time_ns()}_{safe_name}")
     try:
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
     task_id = create_task(file.filename)
-    task_id = create_task(file.filename)
-    start_processing(task_id, file_path)
     start_processing(task_id, file_path)
 
     return JSONResponse(content={"task_id": task_id, "message": "File uploaded successfully."})
