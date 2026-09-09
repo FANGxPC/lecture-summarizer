@@ -25,8 +25,8 @@ Once processing completes, the platform generates a scrolling Executive Summary,
 All jobs are saved dynamically to a local SQLite database, allowing you to re-visit past summaries and transcripts at any time via a beautiful staggered list view.
 ![History Page](assets/history.png)
 
-### 4. Developer API endpoint Definitions
-Generated FastApi endpoint swagger documentation available at `/docs`.
+### 4. Developer API Endpoint Definitions
+Generated FastAPI Swagger documentation is available at `/docs`.
 ![API Endpoints](assets/API_doc_fastapi.png)
 
 ## 🚀 Quick Setup & Installation
@@ -37,7 +37,7 @@ Generated FastApi endpoint swagger documentation available at `/docs`.
   * Linux: `sudo apt update && sudo apt install ffmpeg`
   * macOS: `brew install ffmpeg`
 
-### 1. Clone & Set Up Environment
+### 1. Clone & Set Up the Environment
 ```bash
 # Set up virtual environment
 python3 -m venv venv
@@ -54,7 +54,7 @@ pip install -r requirements.txt
 ```bash
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
-Navigate to `http://localhost:8000` in your web browser. 
+Navigate to `http://localhost:8000` in your web browser.
 
 *(On first run, the app will download the AI models to your machine. Subsequent runs will load them instantly from cache.)*
 
@@ -63,5 +63,5 @@ Navigate to `http://localhost:8000` in your web browser.
 * **AI/ML:** PyTorch, Whisper (OpenAI), Transformers (Hugging Face)
 * **Frontend:** HTML5, Tailwind CSS (via CDN), Vanilla Javascript, Phosphor Icons
 
-## 🧠 Memory Optimizatons
-The models are specifically configured with `expandable_segments:True` and `float16` precision to prevent CUDA fragmentation and allow you to run these powerful large models smoothly even on smaller consumer-grade GPUs!
+## 🧠 Memory Optimizations
+The models are configured with `expandable_segments:True` and `float16` precision to reduce CUDA fragmentation, helping these large models run more smoothly on smaller consumer-grade GPUs.
