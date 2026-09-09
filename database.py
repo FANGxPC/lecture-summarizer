@@ -9,14 +9,18 @@ DB_PATH = os.path.join(BASE_DIR, "audio_app.db")
 
 
 def get_connection(*, with_row_factory: bool = False) -> sqlite3.Connection:
+    """Create a SQLite connection with write-friendly pragmas."""
     conn = sqlite3.connect(DB_PATH)
+    # WAL mode keeps reads responsive while background writes are in flight.
     conn.execute("PRAGMA journal_mode=WAL")
+    # NORMAL sync is a practical trade-off for local app durability/performance.
     conn.execute("PRAGMA synchronous=NORMAL")
     if with_row_factory:
         conn.row_factory = sqlite3.Row
     return conn
 
 def init_db():
+    """Initialize the tasks table and indexes if they do not exist."""
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("""
@@ -33,6 +37,7 @@ def init_db():
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON tasks(created_at DESC)")
 
 def create_task(filename: str) -> str:
+    """Create a new processing task and return its generated ID."""
     task_id = str(uuid.uuid4())
     with get_connection() as conn:
         cursor = conn.cursor()
@@ -44,6 +49,7 @@ def create_task(filename: str) -> str:
 
 def update_task_status(task_id: str, status: str, transcript: Optional[str] = None, 
                        summary: Optional[str] = None, topics: Optional[list] = None):
+    """Update task status and optionally persist generated artifacts."""
     with get_connection() as conn:
         cursor = conn.cursor()
         
@@ -66,6 +72,7 @@ def update_task_status(task_id: str, status: str, transcript: Optional[str] = No
         cursor.execute(query, tuple(values))
 
 def get_task(task_id: str) -> Optional[Dict[str, Any]]:
+    """Fetch one task record and decode topics JSON when present."""
     with get_connection(with_row_factory=True) as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
@@ -79,6 +86,7 @@ def get_task(task_id: str) -> Optional[Dict[str, Any]]:
     return None
 
 def get_all_tasks() -> list[Dict[str, Any]]:
+    """Fetch task history ordered by most recent first."""
     with get_connection(with_row_factory=True) as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM tasks ORDER BY created_at DESC")

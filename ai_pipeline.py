@@ -16,6 +16,7 @@ CANDIDATE_LABELS = [
 ]
 
 def load_models():
+    """Lazily load model components once and reuse them across requests."""
     global whisper_model, summarizer_tokenizer, summarizer_model, classifier
     has_cuda = torch.cuda.is_available()
     device = "cuda" if has_cuda else "cpu"
@@ -52,7 +53,9 @@ def load_models():
 pipeline_lock = threading.Lock()
 
 def process_audio_task(task_id: str, file_path: str):
+    """Execute the end-to-end transcription, summary, and classification flow."""
     try:
+        # Model loading/transcription are serialized to avoid concurrent GPU spikes.
         with pipeline_lock:
             load_models()
             print(f"[{task_id}] Transcribing audio: {file_path}")
@@ -71,6 +74,7 @@ def process_audio_task(task_id: str, file_path: str):
         update_task_status(task_id, status="summarizing", transcript=transcript)
         
         max_chunk_words = 600
+        # Chunking keeps the summarizer within token limits for long transcripts.
         chunks = [" ".join(words[i:i + max_chunk_words]) for i in range(0, len(words), max_chunk_words)]
         
         num_chunks = len(chunks)
@@ -116,5 +120,6 @@ def process_audio_task(task_id: str, file_path: str):
         update_task_status(task_id, status="failed", transcript=f"Error occurred: {str(e)}")
 
 def start_processing(task_id: str, file_path: str):
+    """Run audio processing asynchronously so upload requests return immediately."""
     thread = threading.Thread(target=process_audio_task, args=(task_id, file_path), daemon=True)
     thread.start()
