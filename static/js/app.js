@@ -12,6 +12,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const resultSummary = document.getElementById("result-summary");
     const resultTopics = document.getElementById("result-topics");
     const resultTranscript = document.getElementById("result-transcript");
+    const summaryWordCount = document.getElementById("summary-word-count");
+    const transcriptWordCount = document.getElementById("transcript-word-count");
+    const topicsCount = document.getElementById("topics-count");
+    const transcriptCharCount = document.getElementById("transcript-char-count");
 
     const btnNew = document.getElementById("btn-new");
     const btnCopy = document.getElementById("btn-copy");
@@ -181,10 +185,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             resultSummary.textContent = data.summary || "No summary available.";
             resultTranscript.textContent = data.transcript || "No transcript available.";
+            const summaryWords = (resultSummary.textContent.trim().match(/\S+/g) || []).length;
+            const transcriptWords = (resultTranscript.textContent.trim().match(/\S+/g) || []).length;
+            summaryWordCount.textContent = summaryWords.toLocaleString();
+            transcriptWordCount.textContent = transcriptWords.toLocaleString();
+            transcriptCharCount.textContent = resultTranscript.textContent.length.toLocaleString();
         }, 300);
 
         resultTopics.innerHTML = '';
         if (data.topics && data.topics.length > 0) {
+            topicsCount.textContent = data.topics.length.toLocaleString();
             data.topics.forEach(topic => {
                 const span = document.createElement('span');
                 span.className = "px-3 py-1 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium border border-purple-200 dark:border-purple-800/50";
@@ -192,6 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 resultTopics.appendChild(span);
             });
         } else {
+            topicsCount.textContent = "0";
             resultTopics.textContent = "No topics identified.";
             resultTopics.className = "text-gray-500 text-sm";
         }
@@ -206,6 +217,10 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInterval(pollInterval);
         currentTaskId = null;
         fileInput.value = '';
+        summaryWordCount.textContent = "0";
+        transcriptWordCount.textContent = "0";
+        topicsCount.textContent = "0";
+        transcriptCharCount.textContent = "0";
 
         resultsSection.classList.add('opacity-0', 'translate-y-8');
         processingSection.classList.remove('opacity-100', 'scale-100');
