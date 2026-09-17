@@ -9,6 +9,7 @@ whisper_model = None
 summarizer_tokenizer = None
 summarizer_model = None
 classifier = None
+pipeline_has_cuda = False
 
 CANDIDATE_LABELS = [
     "Technology", "Science", "History", "Business", "Health",
@@ -17,8 +18,9 @@ CANDIDATE_LABELS = [
 
 def load_models():
     """Lazily load model components once and reuse them across requests."""
-    global whisper_model, summarizer_tokenizer, summarizer_model, classifier
+    global whisper_model, summarizer_tokenizer, summarizer_model, classifier, pipeline_has_cuda
     has_cuda = torch.cuda.is_available()
+    pipeline_has_cuda = has_cuda
     device = "cuda" if has_cuda else "cpu"
     pipe_device = 0 if has_cuda else -1
     torch_dtype = torch.float16 if has_cuda else torch.float32
@@ -60,7 +62,7 @@ def process_audio_task(task_id: str, file_path: str):
             load_models()
             print(f"[{task_id}] Transcribing audio: {file_path}")
             update_task_status(task_id, status="transcribing")
-            result = whisper_model.transcribe(file_path, fp16=False)
+            result = whisper_model.transcribe(file_path, fp16=pipeline_has_cuda)
             transcript = result["text"]
             
         words = transcript.split()
@@ -92,7 +94,7 @@ def process_audio_task(task_id: str, file_path: str):
                     
                     summary_ids = summarizer_model.generate(
                         input_ids,
-                        num_beams=4,
+                        num_beams=4 if pipeline_has_cuda else 2,
                         max_length=chunk_max_length, 
                         min_length=chunk_min_length,
                         no_repeat_ngram_size=3
