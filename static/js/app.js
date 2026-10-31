@@ -63,10 +63,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function uploadFile(file) {
-        const validTypes = ['audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/x-m4a', 'audio/mp4', 'audio/m4a', 'video/mp4'];
         const ext = file.name.split('.').pop().toLowerCase();
         if (!['mp3', 'wav', 'm4a'].includes(ext)) {
             alert('Please upload an MP3, WAV, or M4A file.');
+            return;
+        }
+        if (file.size > 50 * 1024 * 1024) {
+            alert('Please upload a file smaller than 50MB.');
             return;
         }
         uploadSection.classList.remove('animate-fade-in-up', 'animate-fade-in-up-delay-1');
@@ -193,6 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 300);
 
         resultTopics.innerHTML = '';
+        resultTopics.className = 'flex flex-wrap gap-2 mt-auto pb-2';
         if (data.topics && data.topics.length > 0) {
             topicsCount.textContent = data.topics.length.toLocaleString();
             data.topics.forEach(topic => {
