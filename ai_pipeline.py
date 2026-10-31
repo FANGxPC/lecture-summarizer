@@ -120,6 +120,11 @@ def process_audio_task(task_id: str, file_path: str):
         traceback.print_exc()
         print(f"[{task_id}] Error: {str(e)}")
         update_task_status(task_id, status="failed", transcript=f"Error occurred: {str(e)}")
+    finally:
+        try:
+            os.remove(file_path)
+        except FileNotFoundError:
+            pass
 
 def start_processing(task_id: str, file_path: str):
     """Run audio processing asynchronously so upload requests return immediately."""
