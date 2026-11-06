@@ -1,4 +1,4 @@
-# 🎙️ Audio Summarizer & Classifier
+# Audio Summarizer & Classifier
 
 A fast, fully-local AI application that transcribes, summarizes, and topic-classifies your audio files (lectures, voice notes, meetings) using FastAPI and on-device machine learning models. Built with a stunning, reactive glassmorphic UI.
 
